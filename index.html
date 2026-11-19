@@ -77,7 +77,7 @@
     .app-layout { display: flex; flex: 1; width: 100%; position: relative; }
     .sidebar-ad-left, .sidebar-history-right { width: 220px; flex-shrink: 0; padding: 24px 16px; background: var(--sidebar-bg); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
     .sidebar-ad-left { align-items: center; font-size: 0.72rem; color: var(--muted); }
-    .sidebar-ad-box { width: 160px; height: 280px; border: 1px dashed var(--border-hover); border-radius: 12px; display: grid; place-items: center; background: var(--surface); text-align: center; color: var(--muted); padding: 10px; }
+    .sidebar-ad-box { width: 160px; height: 280px; border: 1px dashed var(--border-hover); border-radius: 12px; display: grid; place-items: center; background: var(--surface); text-align: center; color: var(--muted); padding: 10px; overflow: hidden; }
     .history-sidebar-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
     .history-sidebar-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: calc(100vh - 160px); }
     .empty-sidebar-history { text-align: center; padding: 20px 0; color: var(--muted); font-size: 0.75rem; }
@@ -87,7 +87,7 @@
     .history-mini-actions button { flex: 1; padding: 4px; font-size: 0.7rem; border-radius: 4px; border: 1px solid var(--border); background: var(--surface-solid); color: var(--text); cursor: pointer; }
     .history-mini-actions button.trash-btn { color: #ef4444; }
     main { flex: 1; max-width: 780px; margin: 0 auto; padding: 28px 24px 56px; display: flex; flex-direction: column; align-items: center; }
-    .ad-slot-top, .ad-slot-bottom { width: 100%; max-width: 728px; min-height: 80px; margin-bottom: 24px; border: 1px dashed var(--border-hover); border-radius: 12px; display: grid; place-items: center; color: var(--muted); font-size: 0.8rem; background: var(--surface); }
+    .ad-slot-top, .ad-slot-bottom { width: 100%; max-width: 728px; min-height: 90px; margin-bottom: 24px; border: 1px dashed var(--border-hover); border-radius: 12px; display: grid; place-items: center; color: var(--muted); font-size: 0.8rem; background: var(--surface); overflow: hidden; }
     .ad-slot-bottom { margin-top: 24px; margin-bottom: 0; }
     .hero { text-align: center; margin-bottom: 28px; }
     .hero h1 { font-size: 2.4rem; font-weight: 700; margin-bottom: 10px; background: linear-gradient(180deg, var(--hero-grad-start), var(--hero-grad-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -130,18 +130,40 @@
     <aside class="sidebar-ad-left">
       <span>Sponsored Ad 1</span>
       <div class="sidebar-ad-box">
-        [160x280 Ad Unit #1]
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8466445243147110" crossorigin="anonymous"></script>
+        <ins class="adsbygoogle"
+             style="display:block;width:160px;height:280px"
+             data-ad-client="ca-pub-8466445243147110"
+             data-ad-slot="YOUR_AD_SLOT_ID_1"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
       </div>
+
       <span style="margin-top: 10px;">Sponsored Ad 2</span>
       <div class="sidebar-ad-box">
-        [160x280 Ad Unit #2]
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8466445243147110" crossorigin="anonymous"></script>
+        <ins class="adsbygoogle"
+             style="display:block;width:160px;height:280px"
+             data-ad-client="ca-pub-8466445243147110"
+             data-ad-slot="YOUR_AD_SLOT_ID_2"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
       </div>
     </aside>
 
     <main>
       <!-- Top Leaderboard Ad Slot -->
       <div class="ad-slot-top">
-        [Leaderboard Ad Banner 728x90]
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8466445243147110" crossorigin="anonymous"></script>
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:728px;height:90px"
+             data-ad-client="ca-pub-8466445243147110"
+             data-ad-slot="YOUR_AD_SLOT_ID_TOP"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
       </div>
 
       <section class="hero">
@@ -183,7 +205,14 @@
 
       <!-- Leaderboard Ad Banner Underneath File Drop Area -->
       <div class="ad-slot-bottom">
-        [Bottom Leaderboard Ad Banner 728x90]
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8466445243147110" crossorigin="anonymous"></script>
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:728px;height:90px"
+             data-ad-client="ca-pub-8466445243147110"
+             data-ad-slot="YOUR_AD_SLOT_ID_BOTTOM"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
       </div>
     </main>
 
@@ -199,7 +228,7 @@
   <footer>Veloce Studio Engineering • 100% Local Browser Execution</footer>
 
   <script type="module">
-    import { removeBackground } from 'https://cdn.jsdelivr.5npm/@imgly/background-removal@1.5.5/+esm';
+    import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm';
 
     // --- Theme Toggle & Persistence ---
     const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -392,7 +421,7 @@
         });
 
         statusText.textContent = 'Refining edges...';
-        const finalBlob = style = await cleanWhiteBackground(rawBlob);
+        const finalBlob = await cleanWhiteBackground(rawBlob);
 
         processedUrl = URL.createObjectURL(finalBlob);
         previewImg.src = processedUrl;
