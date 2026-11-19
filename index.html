@@ -409,7 +409,7 @@
         statusText.textContent = 'Running neural segmentation...';
         const rawBlob = await removeBackground(file, {
           model: 'small',
-          publicPath: 'https://unpkg.com/@imgly/background-removal@1.5.5/dist/',
+          publicPath: 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/',
           progress: (key, current, total) => {
             if (total > 0) {
               const pct = Math.round((current / total) * 100);
@@ -425,7 +425,7 @@
 
         processedUrl = URL.createObjectURL(finalBlob);
         previewImg.src = processedUrl;
-        downloadBtn.disabled = false;
+        downloadBtn.disabled.false;
 
         const reader = new FileReader();
         reader.onloadend = () => addToHistory(reader.result);
