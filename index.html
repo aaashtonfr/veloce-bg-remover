@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veloce Studio — Precision Background Remover</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('veloce-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+  <style>
+    :root, [data-theme="dark"] {
+      --bg: #050507;
+      --header-bg: rgba(5, 5, 7, 0.85);
+      --sidebar-bg: rgba(8, 8, 10, 0.5);
+      --surface: rgba(18, 18, 23, 0.75);
+      --surface-solid: #121216;
+      --surface-hover: rgba(28, 28, 36, 0.9);
+      --toolbar-bg: rgba(10, 10, 14, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.25);
+      --text: #f4f4f5;
+      --muted: #8c8c9e;
+      --accent: #ffffff;
+      --accent-hover: #e4e4e7;
+      --accent-glow: rgba(255, 255, 255, 0.1);
+      --accent-text: #050507;
+      --hero-grad-start: #ffffff;
+      --hero-grad-end: #94a3b8;
+      --checker-color: #141419;
+      --loader-bg: rgba(5, 5, 7, 0.88);
+      --shadow-card: 0 24px 50px rgba(0, 0, 0, 0.5);
+      --radius: 18px;
+    }
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --header-bg: rgba(255, 255, 255, 0.9);
+      --sidebar-bg: rgba(241, 245, 249, 0.6);
+      --surface: rgba(255, 255, 255, 0.85);
+      --surface-solid: #ffffff;
+      --surface-hover: #f1f5f9;
+      --toolbar-bg: rgba(248, 250, 252, 0.9);
+      --border: rgba(15, 23, 42, 0.08);
+      --border-hover: rgba(15, 23, 42, 0.2);
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #0f172a;
+      --accent-hover: #1e293b;
+      --accent-glow: rgba(15, 23, 42, 0.06);
+      --accent-text: #ffffff;
+      --hero-grad-start: #0f172a;
+      --hero-grad-end: #475569;
+      --checker-color: #e2e8f0;
+      --loader-bg: rgba(255, 255, 255, 0.9);
+      --shadow-card: 0 20px 45px rgba(15, 23, 42, 0.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 18px 36px; border-bottom: 1px solid var(--border); background: var(--header-bg); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 100; }
+    .logo { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 32px; height: 32px; background: var(--accent); color: var(--accent-text); border-radius: 10px; display: grid; place-items: center; font-weight: 800; }
+    .badge { font-size: 0.72rem; padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+    .btn { padding: 10px 18px; border-radius: 12px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--surface-solid); color: var(--text); transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:hover { background: var(--surface-hover); border-color: var(--border-hover); transform: translateY(-1px); }
+    .btn-primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+    .app-layout { display: flex; flex: 1; width: 100%; position: relative; }
+    .sidebar-ad-left, .sidebar-history-right { width: 220px; flex-shrink: 0; padding: 24px 16px; background: var(--sidebar-bg); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+    .sidebar-ad-left { align-items: center; font-size: 0.72rem; color: var(--muted); }
+    .sidebar-ad-box { width: 160px; height: 280px; border: 1px dashed var(--border-hover); border-radius: 12px; display: grid; place-items: center; background: var(--surface); text-align: center; color: var(--muted); padding: 10px; }
+    .history-sidebar-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; font-weight: 600; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .history-sidebar-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: calc(100vh - 160px); }
+    .empty-sidebar-history { text-align: center; padding: 20px 0; color: var(--muted); font-size: 0.75rem; }
+    .history-mini-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .history-mini-thumb { width: 100%; height: 90px; object-fit: contain; background: var(--checker-color); border-radius: 6px; }
+    .history-mini-actions { display: flex; gap: 6px; }
+    .history-mini-actions button { flex: 1; padding: 4px; font-size: 0.7rem; border-radius: 4px; border: 1px solid var(--border); background: var(--surface-solid); color: var(--text); cursor: pointer; }
+    .history-mini-actions button.trash-btn { color: #ef4444; }
+    main { flex: 1; max-width: 780px; margin: 0 auto; padding: 28px 24px 56px; display: flex; flex-direction: column; align-items: center; }
+    .ad-slot-top, .ad-slot-bottom { width: 100%; max-width: 728px; min-height: 80px; margin-bottom: 24px; border: 1px dashed var(--border-hover); border-radius: 12px; display: grid; place-items: center; color: var(--muted); font-size: 0.8rem; background: var(--surface); }
+    .ad-slot-bottom { margin-top: 24px; margin-bottom: 0; }
+    .hero { text-align: center; margin-bottom: 28px; }
+    .hero h1 { font-size: 2.4rem; font-weight: 700; margin-bottom: 10px; background: linear-gradient(180deg, var(--hero-grad-start), var(--hero-grad-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--muted); font-size: 0.98rem; max-width: 500px; margin: 0 auto; }
+    .dropzone { width: 100%; max-width: 640px; min-height: 280px; background: var(--surface); border: 1.5px dashed var(--border-hover); border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-card); }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: var(--surface-hover); }
+    .dropzone-icon { width: 50px; height: 50px; border-radius: 12px; background: var(--surface-solid); border: 1px solid var(--border); display: grid; place-items: center; margin-bottom: 14px; font-size: 1.2rem; }
+    .workspace { display: none; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-card); }
+    .workspace-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--toolbar-bg); }
+    .bg-swatches { display: flex; align-items: center; gap: 8px; }
+    .swatch { width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border-hover); cursor: pointer; }
+    .swatch.checker { background: var(--checker-color); }
+    .swatch.active { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .canvas-stage { position: relative; width: 100%; min-height: 400px; display: grid; place-items: center; padding: 24px; background: var(--checker-color); }
+    .canvas-stage img { max-width: 100%; max-height: 460px; border-radius: 8px; object-fit: contain; }
+    .loader-overlay { position: absolute; inset: 0; background: var(--loader-bg); backdrop-filter: blur(6px); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 10; }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #statusText { font-size: 0.88rem; color: var(--muted); font-weight: 500; text-align: center; padding: 0 20px; }
+    footer { text-align: center; padding: 20px; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: auto; }
+    @media (max-width: 1100px) { .sidebar-ad-left, .sidebar-history-right { display: none; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">V</div>
+      <span>Veloce Studio</span>
+      <span class="badge">Neural Core</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn" id="themeToggleBtn" title="Toggle Theme">☀️</button>
+      <button class="btn" id="bulkProBtn">Pro ⚡</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <!-- Left Sidebar Ad Slots (Two Ads Stacked) -->
+    <aside class="sidebar-ad-left">
+      <span>Sponsored Ad 1</span>
+      <div class="sidebar-ad-box">
+        [160x280 Ad Unit #1]
+      </div>
+      <span style="margin-top: 10px;">Sponsored Ad 2</span>
+      <div class="sidebar-ad-box">
+        [160x280 Ad Unit #2]
+      </div>
+    </aside>
+
+    <main>
+      <!-- Top Leaderboard Ad Slot -->
+      <div class="ad-slot-top">
+        [Leaderboard Ad Banner 728x90]
+      </div>
+
+      <section class="hero">
+        <h1>Remove image backgrounds instantly.</h1>
+        <p>Client-side neural vision processing. Zero cloud uploads.</p>
+      </section>
+
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">⚡</div>
+        <h3>Drop an image here or click to browse</h3>
+        <span style="font-size:0.8rem; color:var(--muted); margin-bottom:16px;">Supports PNG, JPG, WEBP • Or press Ctrl+V to paste</span>
+        <button class="btn btn-primary" type="button">Upload or Paste</button>
+        <input type="file" id="fileInput" accept="image/*" hidden />
+      </div>
+
+      <div class="workspace" id="workspace">
+        <div class="workspace-toolbar">
+          <div class="bg-swatches">
+            <span style="font-size:0.8rem; color:var(--muted);">Backdrop:</span>
+            <div class="swatch checker active" data-bg="transparent" title="Transparent"></div>
+            <div class="swatch" style="background: #ffffff;" data-bg="#ffffff" title="White"></div>
+            <div class="swatch" style="background: #09090b;" data-bg="#09090b" title="Dark"></div>
+          </div>
+          <div class="nav-actions">
+            <button class="btn" id="toggleCompareBtn" title="Hold to compare">Compare</button>
+            <button class="btn" id="resetBtn">New Image</button>
+            <button class="btn btn-primary" id="downloadBtn" disabled>Download PNG</button>
+          </div>
+        </div>
+
+        <div class="canvas-stage" id="canvasStage">
+          <div class="loader-overlay" id="loaderOverlay">
+            <div class="spinner"></div>
+            <div id="statusText">Tracing subject...</div>
+          </div>
+          <img id="previewImg" alt="Result" />
+        </div>
+      </div>
+
+      <!-- Leaderboard Ad Banner Underneath File Drop Area -->
+      <div class="ad-slot-bottom">
+        [Bottom Leaderboard Ad Banner 728x90]
+      </div>
+    </main>
+
+    <aside class="sidebar-history-right">
+      <div class="history-sidebar-header">
+        <span>History Vault</span>
+        <span id="historyCount" style="color: var(--muted); font-size: 0.75rem;">0 items</span>
+      </div>
+      <div class="history-sidebar-list" id="sidebarHistoryList"></div>
+    </aside>
+  </div>
+
+  <footer>Veloce Studio Engineering • 100% Local Browser Execution</footer>
+
+  <script type="module">
+    import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm';
+
+    // --- Theme Toggle & Persistence ---
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const htmlEl = document.documentElement;
+
+    function syncThemeIcon(theme) {
+      themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+
+    syncThemeIcon(htmlEl.getAttribute('data-theme') || 'dark');
+
+    themeToggleBtn.addEventListener('click', () => {
+      const current = htmlEl.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      htmlEl.setAttribute('data-theme', next);
+      localStorage.setItem('veloce-theme', next);
+      syncThemeIcon(next);
+    });
+
+    // --- History & Archive Sidebar Management ---
+    const sidebarHistoryList = document.getElementById('sidebarHistoryList');
+    const historyCount = document.getElementById('historyCount');
+
+    function getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem('veloce-history') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveHistory(items) {
+      localStorage.setItem('veloce-history', JSON.stringify(items));
+    }
+
+    function addToHistory(dataUrl) {
+      const history = getHistory();
+      history.unshift({ id: Date.now(), url: dataUrl });
+      if (history.length > 15) history.pop();
+      saveHistory(history);
+      renderSidebarHistory();
+    }
+
+    function renderSidebarHistory() {
+      const history = getHistory();
+      historyCount.textContent = `${history.length} item${history.length === 1 ? '' : 's'}`;
+
+      if (history.length === 0) {
+        sidebarHistoryList.innerHTML = `<div class="empty-sidebar-history">No recent cutouts yet. Process an image to see it pinned here!</div>`;
+        return;
+      }
+
+      sidebarHistoryList.innerHTML = history.map(item => `
+        <div class="history-mini-card" data-id="${item.id}">
+          <img class="history-mini-thumb" src="${item.url}" alt="Archived cutout" />
+          <div class="history-mini-actions">
+            <button class="download-archived" data-url="${item.url}">Save</button>
+            <button class="trash-btn" data-id="${item.id}">Trash</button>
+          </div>
+        </div>
+      `).join('');
+
+      sidebarHistoryList.querySelectorAll('.trash-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = Number(e.target.dataset.id);
+          const filtered = getHistory().filter(i => i.id !== id);
+          saveHistory(filtered);
+          renderSidebarHistory();
+        });
+      });
+
+      sidebarHistoryList.querySelectorAll('.download-archived').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const url = e.target.dataset.url;
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'veloce-cutout.png';
+          a.click();
+        });
+      });
+    }
+
+    renderSidebarHistory();
+
+    // --- Background Removal App Logic ---
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const workspace = document.getElementById('workspace');
+    const previewImg = document.getElementById('previewImg');
+    const loaderOverlay = document.getElementById('loaderOverlay');
+    const statusText = document.getElementById('statusText');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const toggleCompareBtn = document.getElementById('toggleCompareBtn');
+    const canvasStage = document.getElementById('canvasStage');
+    const swatches = document.querySelectorAll('.swatch');
+
+    let originalUrl = null;
+    let processedUrl = null;
+    let selectedBg = 'transparent';
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files?.[0]) handleFile(e.target.files[0]);
+    });
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]);
+    });
+
+    window.addEventListener('paste', (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          handleFile(item.getAsFile());
+          break;
+        }
+      }
+    });
+
+    async function cleanWhiteBackground(blob) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(blob);
+        img.src = objectUrl;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imgData.data;
+
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+            if (r > 235 && g > 235 && b > 235 && a > 10) {
+              data[i + 3] = 0;
+            }
+          }
+
+          ctx.putImageData(imgData, 0, 0);
+          canvas.toBlob((b) => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(b);
+          }, 'image/png');
+        };
+      });
+    }
+
+    async function handleFile(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file.');
+        return;
+      }
+
+      if (originalUrl) URL.revokeObjectURL(originalUrl);
+      if (processedUrl) URL.revokeObjectURL(processedUrl);
+
+      originalUrl = URL.createObjectURL(file);
+      previewImg.src = originalUrl;
+
+      dropzone.style.display = 'none';
+      workspace.style.display = 'block';
+      loaderOverlay.style.display = 'flex';
+      downloadBtn.disabled = true;
+
+      try {
+        statusText.textContent = 'Running neural segmentation...';
+        const rawBlob = await removeBackground(file, {
+          model: 'small',
+          publicPath: 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/',
+          progress: (key, current, total) => {
+            if (total > 0) {
+              const pct = Math.round((current / total) * 100);
+              statusText.textContent = `Tracing subject (${pct}%)`;
+            } else {
+              statusText.textContent = `Tracing subject...`;
+            }
+          }
+        });
+
+        statusText.textContent = 'Refining edges...';
+        const finalBlob = await cleanWhiteBackground(rawBlob);
+
+        processedUrl = URL.createObjectURL(finalBlob);
+        previewImg.src = processedUrl;
+        downloadBtn.disabled = false;
+
+        const reader = new FileReader();
+        reader.onloadend = () => addToHistory(reader.result);
+        reader.readAsDataURL(finalBlob);
+
+      } catch (err) {
+        console.error(err);
+        statusText.textContent = 'Processing error. Try another image.';
+      } finally {
+        loaderOverlay.style.display = 'none';
+      }
+    }
+
+    swatches.forEach((swatch) => {
+      swatch.addEventListener('click', () => {
+        swatches.forEach((s) => s.classList.remove('active'));
+        swatch.classList.add('active');
+        selectedBg = swatch.dataset.bg;
+        canvasStage.style.background = selectedBg === 'transparent' ? '' : selectedBg;
+      });
+    });
+
+    toggleCompareBtn.addEventListener('mousedown', () => { if (originalUrl) previewImg.src = originalUrl; });
+    toggleCompareBtn.addEventListener('mouseup', () => { if (processedUrl) previewImg.src = processedUrl; });
+    toggleCompareBtn.addEventListener('mouseleave', () => { if (processedUrl) previewImg.src = processedUrl; });
+
+    downloadBtn.addEventListener('click', async () => {
+      if (!processedUrl) return;
+      if (selectedBg === 'transparent') {
+        triggerDownload(processedUrl, 'veloce-cutout.png');
+        return;
+      }
+
+      const img = new Image();
+      img.src = processedUrl;
+      await img.decode();
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = selectedBg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      canvas.toBlob((blob) => {
+        triggerDownload(URL.createObjectURL(blob), 'veloce-cutout-bg.png');
+      }, 'image/png');
+    });
+
+    function triggerDownload(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+    }
+
+    resetBtn.addEventListener('click', () => {
+      workspace.style.display = 'none';
+      dropzone.style.display = 'flex';
+      fileInput.value = '';
+      fileInput.click();
+    });
+
+    document.getElementById('bulkProBtn').addEventListener('click', () => {
+      alert('Stripe Pro Checkout: Unlock batch ZIP folder processing for $5.');
+    });
+  </script>
+</body>
+</html>
