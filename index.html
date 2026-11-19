@@ -107,7 +107,21 @@
     .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     #statusText { font-size: 0.88rem; color: var(--muted); font-weight: 500; text-align: center; padding: 0 20px; }
-    footer { text-align: center; padding: 20px; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: auto; }
+    
+    /* Modals (Pro Coming Soon, About, Privacy Policy) */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(5, 5, 7, 0.8); backdrop-filter: blur(8px); display: none; place-items: center; z-index: 200; padding: 20px; }
+    .modal-backdrop.open { display: grid; }
+    .modal-card { background: var(--surface-solid); border: 1px solid var(--border-hover); border-radius: var(--radius); max-width: 440px; width: 100%; padding: 28px; text-align: center; box-shadow: var(--shadow-card); }
+    .modal-card.left-align { text-align: left; max-width: 520px; max-height: 80vh; overflow-y: auto; }
+    .modal-card h2 { font-size: 1.35rem; margin-bottom: 10px; }
+    .modal-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.55; margin-bottom: 16px; }
+    .modal-card ul { color: var(--muted); font-size: 0.85rem; line-height: 1.55; margin: 0 0 18px 18px; }
+    .modal-card li { margin-bottom: 6px; }
+
+    footer { text-align: center; padding: 20px; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: auto; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .footer-links { display: flex; gap: 16px; }
+    .footer-links button { background: none; border: none; color: var(--muted); font-size: 0.78rem; cursor: pointer; text-decoration: underline; }
+    .footer-links button:hover { color: var(--text); }
     @media (max-width: 1100px) { .sidebar-ad-left, .sidebar-history-right { display: none; } }
   </style>
 </head>
@@ -225,7 +239,47 @@
     </aside>
   </div>
 
-  <footer>Veloce Studio Engineering • 100% Local Browser Execution</footer>
+  <footer>
+    <div>Veloce Studio Engineering • 100% Local Browser Execution</div>
+    <div class="footer-links">
+      <button type="button" id="openAboutBtn">About</button>
+      <button type="button" id="openPrivacyBtn">Privacy Policy</button>
+    </div>
+  </footer>
+
+  <!-- Pro Coming Soon Modal -->
+  <div class="modal-backdrop" id="proModal">
+    <div class="modal-card">
+      <div class="badge" style="display: inline-block; margin-bottom: 12px;">In Development</div>
+      <h2>Veloce Pro is Coming Soon</h2>
+      <p>Batch ZIP folder processing, ultra-HD neural cutouts, and custom background presets are currently being built. Stay tuned!</p>
+      <button class="btn btn-primary" id="closeProModalBtn" style="width: 100%;">Got It</button>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modal-backdrop" id="aboutModal">
+    <div class="modal-card left-align">
+      <h2>About Veloce Studio</h2>
+      <p>Veloce Studio is a browser-based background removal utility built for creators, editors, and sellers who need instant transparent PNG cutouts without waiting on slow server queues.</p>
+      <p>All image segmentation runs directly inside your browser using WebAssembly neural vision models—meaning your photos never leave your device.</p>
+      <button class="btn btn-primary" id="closeAboutBtn" style="width: 100%;">Close</button>
+    </div>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div class="modal-backdrop" id="privacyModal">
+    <div class="modal-card left-align">
+      <h2>Privacy Policy</h2>
+      <p>Your privacy matters. Veloce Studio processes all uploaded and pasted images locally in your web browser.</p>
+      <ul>
+        <li><strong>Zero Image Uploads:</strong> Images are never transmitted to or stored on external servers. Recent cutouts in your History Vault are saved solely in your browser's local storage.</li>
+        <li><strong>Third-Party Advertising:</strong> We use Google AdSense to display advertisements. Google and its partners may use cookies to serve ads based on your prior visits to this or other websites.</li>
+        <li><strong>Ad Opt-Out:</strong> You may opt out of personalized advertising by visiting Google's Ads Settings (<a href="https://adssettings.google.com" target="_blank" rel="noopener" style="color: var(--text);">adssettings.google.com</a>).</li>
+      </ul>
+      <button class="btn btn-primary" id="closePrivacyBtn" style="width: 100%;">Close</button>
+    </div>
+  </div>
 
   <script type="module">
     import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm';
@@ -247,6 +301,23 @@
       localStorage.setItem('veloce-theme', next);
       syncThemeIcon(next);
     });
+
+    // --- Modal Controls ---
+    function bindModal(modalId, openBtnId, closeBtnId) {
+      const modal = document.getElementById(modalId);
+      const openBtn = document.getElementById(openBtnId);
+      const closeBtn = document.getElementById(closeBtnId);
+
+      openBtn.addEventListener('click', () => modal.classList.add('open'));
+      closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('open');
+      });
+    }
+
+    bindModal('proModal', 'bulkProBtn', 'closeProModalBtn');
+    bindModal('aboutModal', 'openAboutBtn', 'closeAboutBtn');
+    bindModal('privacyModal', 'openPrivacyBtn', 'closePrivacyBtn');
 
     // --- History & Archive Sidebar Management ---
     const sidebarHistoryList = document.getElementById('sidebarHistoryList');
@@ -488,10 +559,6 @@
       dropzone.style.display = 'flex';
       fileInput.value = '';
       fileInput.click();
-    });
-
-    document.getElementById('bulkProBtn').addEventListener('click', () => {
-      alert('Stripe Pro Checkout: Unlock batch ZIP folder processing for $5.');
     });
   </script>
 </body>
